@@ -2,7 +2,7 @@ import copy
 import json
 import os
 import time
-from typing import Dict
+from typing import Dict  # 类型提示
 
 import voyager.utils as U
 from .env import VoyagerEnv
@@ -55,7 +55,7 @@ class Voyager:
         Curriculum agent is the automatic curriculum in paper.
         Critic agent is the self-verification in paper.
         Skill manager is the skill library in paper.
-        :param mc_port: minecraft in-game port
+        :param mc_port: minecraft in-game port  # 
         :param azure_login: minecraft login config
         :param server_port: mineflayer port
         :param openai_api_key: openai api key
@@ -154,7 +154,7 @@ class Voyager:
         self.recorder = U.EventRecorder(ckpt_dir=ckpt_dir, resume=resume)
         self.resume = resume
 
-        # init variables for rollout
+        # init variables for rollout(首次展示)
         self.action_agent_rollout_num_iter = -1
         self.task = None
         self.context = ""
@@ -162,7 +162,7 @@ class Voyager:
         self.conversations = []
         self.last_events = None
 
-    def reset(self, task, context="", reset_env=True):
+    def reset(self, task, context="", reset_env=True):  # reset game
         self.action_agent_rollout_num_iter = 0
         self.task = task
         self.context = context
@@ -197,10 +197,10 @@ class Voyager:
         self.conversations = []
         return self.messages
 
-    def close(self):
+    def close(self):  # close game
         self.env.close()
 
-    def step(self):
+    def step(self):  # operate a step
         if self.action_agent_rollout_num_iter < 0:
             raise ValueError("Agent must be reset before stepping")
         ai_message = self.action_agent.llm(self.messages)
@@ -284,7 +284,7 @@ class Voyager:
             )
         return self.messages, 0, done, info
 
-    def rollout(self, *, task, context, reset_env=True):
+    def rollout(self, *, task, context, reset_env=True):  # 首次展示
         self.reset(task=task, context=context, reset_env=reset_env)
         while True:
             messages, reward, done, info = self.step()
@@ -292,7 +292,7 @@ class Voyager:
                 break
         return messages, reward, done, info
 
-    def learn(self, reset_env=True):
+    def learn(self, reset_env=True):  # 执行任务，学习技能。返回完成的/失败的任务，学会的新技能
         if self.resume:
             # keep the inventory
             self.env.reset(
@@ -367,7 +367,7 @@ class Voyager:
             "skills": self.skill_manager.skills,
         }
 
-    def decompose_task(self, task):
+    def decompose_task(self, task):  # 分解任务
         if not self.last_events:
             self.last_events = self.env.reset(
                 options={
