@@ -15,7 +15,7 @@ from .agents import SkillManager
 
 # TODO: remove event memory
 class Voyager:
-    def __init__(
+    def __init__(                                         ## 初始化
         self,
         mc_port: int = None,
         azure_login: Dict[str, str] = None,
@@ -55,23 +55,24 @@ class Voyager:
         Curriculum agent is the automatic curriculum in paper.
         Critic agent is the self-verification in paper.
         Skill manager is the skill library in paper.
-        :param mc_port: minecraft in-game port  # 
+
+        :param mc_port: minecraft in-game port      # port number in the chat log. Minecraft端口号
         :param azure_login: minecraft login config
-        :param server_port: mineflayer port
+        :param server_port: mineflayer port         # Mineflayer端口号
         :param openai_api_key: openai api key
         :param env_wait_ticks: how many ticks at the end each step will wait, if you found some chat log missing,
-        you should increase this value
+        you should increase this value              # 每个步骤结束后等待的游戏刻数
         :param env_request_timeout: how many seconds to wait for each step, if the code execution exceeds this time,
-        python side will terminate the connection and need to be resumed
-        :param reset_placed_if_failed: whether to reset placed blocks if failed, useful for building task
+        python side will terminate the connection and need to be resumed             # 每个步骤的最大等待时间
+        :param reset_placed_if_failed: whether to reset placed blocks if failed, useful for building task  # 如果失败,是否重置放置的块，对构建任务有用
         :param action_agent_model_name: action agent model name
-        :param action_agent_temperature: action agent temperature
-        :param action_agent_task_max_retries: how many times to retry if failed
+        :param action_agent_temperature: action agent temperature                    # 控制 LM 的生成随机性, 0表示完全确定
+        :param action_agent_task_max_retries: how many times to retry if failed      # 失败时重试的次数
         :param curriculum_agent_model_name: curriculum agent model name
         :param curriculum_agent_temperature: curriculum agent temperature
-        :param curriculum_agent_qa_model_name: curriculum agent qa model name
+        :param curriculum_agent_qa_model_name: curriculum agent qa model name        # qa: question, answer
         :param curriculum_agent_qa_temperature: curriculum agent qa temperature
-        :param curriculum_agent_warm_up: info will show in curriculum human message
+        :param curriculum_agent_warm_up: info will show in curriculum human message  # 信息将在课程中显示人类信息?
         if completed task larger than the value in dict, available keys are:
         {
             "context": int,
@@ -98,7 +99,7 @@ class Voyager:
         :param openai_api_request_timeout: how many seconds to wait for openai api
         :param ckpt_dir: checkpoint dir
         :param skill_library_dir: skill library dir
-        :param resume: whether to resume from checkpoint
+        :param resume: whether to resume from checkpoint  # 上一次中断的地方继续执行(otherwise 重新开始)
         """
         # init env
         self.env = VoyagerEnv(
@@ -154,16 +155,17 @@ class Voyager:
         self.recorder = U.EventRecorder(ckpt_dir=ckpt_dir, resume=resume)
         self.resume = resume
 
-        # init variables for rollout(首次展示)
+        # init variables for rollout(执行任务)
         self.action_agent_rollout_num_iter = -1
-        self.task = None
+        self.task = None  # str
         self.context = ""
         self.messages = None
         self.conversations = []
-        self.last_events = None
+        self.last_events = None   # agent_state
 
-    def reset(self, task, context="", reset_env=True):  # reset game
-        self.action_agent_rollout_num_iter = 0
+    def reset(self, task, context="", reset_env=True):    ## 重置游戏环境
+        '''设置游戏难度、执行动作、渲染消息，并将生成的消息列表返回'''
+        self.action_agent_rollout_num_iter = 0           # Action Agent (prompt) 的迭代次数
         self.task = task
         self.context = context
         if reset_env:
@@ -173,52 +175,54 @@ class Voyager:
                     "wait_ticks": self.env_wait_ticks,
                 }
             )
-        difficulty = (
+        difficulty = (                                   # 根据已完成的任务数量 决定游戏难度
             "easy" if len(self.curriculum_agent.completed_tasks) > 15 else "peaceful"
         )
         # step to peek an observation
-        events = self.env.step(
-            "bot.chat(`/time set ${getNextTime()}`);\n"
+        events = self.env.step(                          # 执行 Minecraft 游戏步骤
+            "bot.chat(`/time set ${getNextTime()}`);\n"  # 设置游戏时间和难度
             + f"bot.chat('/difficulty {difficulty}');"
         )
-        skills = self.skill_manager.retrieve_skills(query=self.context)
+        skills = self.skill_manager.retrieve_skills(query=self.context)  # 检索当前任务所需的技能
         print(
-            f"\033[33mRender Action Agent system message with {len(skills)} skills\033[0m"
+            f"\033[33mRender Action Agent system message with {len(skills)} skills\033[0m"  
+            # \033[33m: 设置文本颜色Yellow; \033[0m: 重置文本样式
         )
-        system_message = self.action_agent.render_system_message(skills=skills)
-        human_message = self.action_agent.render_human_message(
+        system_message = self.action_agent.render_system_message(skills=skills)  # 渲染系统消息,将检索到的skill传递给 Action Agent
+        human_message = self.action_agent.render_human_message(                  # 渲染用户消息,将一些信息传递给 Action Agent
             events=events, code="", task=self.task, context=context, critique=""
         )
         self.messages = [system_message, human_message]
         print(
-            f"\033[32m****Action Agent human message****\n{human_message.content}\033[0m"
+            f"\033[32m****Action Agent human message****\n{human_message.content}\033[0m"  # 32: Green
         )
         assert len(self.messages) == 2
         self.conversations = []
         return self.messages
 
-    def close(self):  # close game
+    def close(self):                                      ## 关闭游戏
         self.env.close()
 
-    def step(self):  # operate a step
+    def step(self):                                       ## 在环境中执行一步动作
+        '''LLM生成?, 根据解析结果更新箱子,检查任务是否成功,返回评价信息'''
         if self.action_agent_rollout_num_iter < 0:
             raise ValueError("Agent must be reset before stepping")
-        ai_message = self.action_agent.llm(self.messages)
-        print(f"\033[34m****Action Agent ai message****\n{ai_message.content}\033[0m")
+        ai_message = self.action_agent.llm(self.messages)                                 # LLM生成的 ai_message: assitant
+        print(f"\033[34m****Action Agent ai message****\n{ai_message.content}\033[0m")    # 34: Blue
         self.conversations.append(
-            (self.messages[0].content, self.messages[1].content, ai_message.content)
+            (self.messages[0].content, self.messages[1].content, ai_message.content)      # system_message, human_message, ai_message
         )
-        parsed_result = self.action_agent.process_ai_message(message=ai_message)
+        parsed_result = self.action_agent.process_ai_message(message=ai_message)          # 解析 ai_message
         success = False
-        if isinstance(parsed_result, dict):
+        if isinstance(parsed_result, dict):                                               # 解析的结果是一个字典，说明 LLM 成功生成代码
             code = parsed_result["program_code"] + "\n" + parsed_result["exec_code"]
-            events = self.env.step(
+            events = self.env.step(                                                       # events: 解析过的 Minecraft 服务器返回的数据
                 code,
                 programs=self.skill_manager.programs,
             )
             self.recorder.record(events, self.task)
-            self.action_agent.update_chest_memory(events[-1][1]["nearbyChests"])
-            success, critique = self.critic_agent.check_task_success(
+            self.action_agent.update_chest_memory(events[-1][1]["nearbyChests"])         # 更新箱子的内存信息
+            success, critique = self.critic_agent.check_task_success(                    # critic_agent 检查任务是否成功,返回评价信息
                 events=events,
                 task=self.task,
                 context=self.context,
@@ -226,7 +230,7 @@ class Voyager:
                 max_retries=5,
             )
 
-            if self.reset_placed_if_failed and not success:
+            if self.reset_placed_if_failed and not success:                              # 任务失败，将上一步放置的所有event撤销
                 # revert all the placing event in the last step
                 blocks = []
                 positions = []
@@ -242,13 +246,13 @@ class Voyager:
                 )
                 events[-1][1]["inventory"] = new_events[-1][1]["inventory"]
                 events[-1][1]["voxels"] = new_events[-1][1]["voxels"]
-            new_skills = self.skill_manager.retrieve_skills(
+            new_skills = self.skill_manager.retrieve_skills(                             # 获取新的skill
                 query=self.context
                 + "\n\n"
                 + self.action_agent.summarize_chatlog(events)
-            )
-            system_message = self.action_agent.render_system_message(skills=new_skills)
-            human_message = self.action_agent.render_human_message(
+            )       
+            system_message = self.action_agent.render_system_message(skills=new_skills)  # 生成新的系统消息 System
+            human_message = self.action_agent.render_human_message(                      # 和用户消息       User
                 events=events,
                 code=parsed_result["program_code"],
                 task=self.task,
@@ -257,17 +261,17 @@ class Voyager:
             )
             self.last_events = copy.deepcopy(events)
             self.messages = [system_message, human_message]
-        else:
+        else:                                                                             # 解析的结果不是字典，说明 LLM 生成失败
             assert isinstance(parsed_result, str)
             self.recorder.record([], self.task)
             print(f"\033[34m{parsed_result} Trying again!\033[0m")
         assert len(self.messages) == 2
         self.action_agent_rollout_num_iter += 1
-        done = (
+        done = (                                                                          # 如果达到最大尝试次数or动作成功，则一次动作的迭代完成
             self.action_agent_rollout_num_iter >= self.action_agent_task_max_retries
             or success
         )
-        info = {
+        info = {                                                                          # 动作执行的信息
             "task": self.task,
             "success": success,
             "conversations": self.conversations,
@@ -284,17 +288,18 @@ class Voyager:
             )
         return self.messages, 0, done, info
 
-    def rollout(self, *, task, context, reset_env=True):  # 首次展示
-        self.reset(task=task, context=context, reset_env=reset_env)
+    def rollout(self, *, task, context, reset_env=True):  ## 执行任务
+        self.reset(task=task, context=context, reset_env=reset_env)  # 重置环境，以准备执行新的任务
         while True:
-            messages, reward, done, info = self.step()
+            messages, reward, done, info = self.step()               # 执行一步动作,返回任务执行过程中的信息
             if done:
                 break
         return messages, reward, done, info
 
-    def learn(self, reset_env=True):  # 执行任务，学习技能。返回完成的/失败的任务，学会的新技能
+    def learn(self, reset_env=True):                      ## 执行任务，学习技能。返回完成的/失败的任务，学会的新技能
+        # 初始化环境
         if self.resume:
-            # keep the inventory
+            # keep the inventory (soft mode) 保留当前的库存状态
             self.env.reset(
                 options={
                     "mode": "soft",
@@ -302,7 +307,7 @@ class Voyager:
                 }
             )
         else:
-            # clear the inventory
+            # clear the inventory (hard mode) 清空库存
             self.env.reset(
                 options={
                     "mode": "hard",
@@ -310,33 +315,34 @@ class Voyager:
                 }
             )
             self.resume = True
+        # 将当前状态保存在 last_events (即 agent_state)中
         self.last_events = self.env.step("")
-
+        
+        # 持续进行任务的探索和执行（每次循环表示一个任务）
         while True:
             if self.recorder.iteration > self.max_iterations:
                 print("Iteration limit reached")
                 break
+            # 根据当前环境和已学到的技能 提出下一个任务
             task, context = self.curriculum_agent.propose_next_task(
                 events=self.last_events,
-                chest_observation=self.action_agent.render_chest_observation(),
+                chest_observation=self.action_agent.render_chest_observation(),  # 当前探索进度信息
                 max_retries=5,
             )
-            print(
-                f"\033[35mStarting task {task} for at most {self.action_agent_task_max_retries} times\033[0m"
-            )
-            try:
+            print(f"\033[35mStarting task {task} for at most {self.action_agent_task_max_retries} times\033[0m")  # 35:purple
+            try:                    # 执行所选的任务
                 messages, reward, done, info = self.rollout(
                     task=task,
                     context=context,
                     reset_env=reset_env,
                 )
-            except Exception as e:
-                time.sleep(3)  # wait for mineflayer to exit
+            except Exception as e:  # rollout not success
+                time.sleep(3)       # wait for mineflayer to exit
                 info = {
                     "task": task,
                     "success": False,
                 }
-                # reset bot status here
+                # reset bot status here (agent_state)
                 self.last_events = self.env.reset(
                     options={
                         "mode": "hard",
@@ -348,18 +354,14 @@ class Voyager:
                 )
                 # use red color background to print the error
                 print("Your last round rollout terminated due to error:")
-                print(f"\033[41m{e}\033[0m")
+                print(f"\033[41m{e}\033[0m")  # 41: Red
 
             if info["success"]:
-                self.skill_manager.add_new_skill(info)
+                self.skill_manager.add_new_skill(info)               # rollout success,添加新技能
 
-            self.curriculum_agent.update_exploration_progress(info)
-            print(
-                f"\033[35mCompleted tasks: {', '.join(self.curriculum_agent.completed_tasks)}\033[0m"
-            )
-            print(
-                f"\033[35mFailed tasks: {', '.join(self.curriculum_agent.failed_tasks)}\033[0m"
-            )
+            self.curriculum_agent.update_exploration_progress(info)  # 更新探索进度
+            print(f"\033[35mCompleted tasks: {', '.join(self.curriculum_agent.completed_tasks)}\033[0m")
+            print(f"\033[35mFailed tasks: {', '.join(self.curriculum_agent.failed_tasks)}\033[0m")
 
         return {
             "completed_tasks": self.curriculum_agent.completed_tasks,
@@ -367,7 +369,7 @@ class Voyager:
             "skills": self.skill_manager.skills,
         }
 
-    def decompose_task(self, task):  # 分解任务
+    def decompose_task(self, task):                       ## 分解任务
         if not self.last_events:
             self.last_events = self.env.reset(
                 options={

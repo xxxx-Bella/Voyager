@@ -9,7 +9,7 @@ from langchain.vectorstores import Chroma
 from voyager.prompts import load_prompt
 from voyager.control_primitives import load_control_primitives
 
-
+# skill library
 class SkillManager:
     def __init__(
         self,

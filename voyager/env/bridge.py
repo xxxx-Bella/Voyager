@@ -102,26 +102,26 @@ class VoyagerEnv(gym.Env):
                 )
             return res.json()
 
-    def step(
+    def step(                       ## 执行 Minecraft 游戏步骤
         self,
-        code: str,
-        programs: str = "",
+        code: str,                  # 将要在 Minecraft 服务器中执行的代码
+        programs: str = "",         # 可能用于执行代码的程序
     ) -> Tuple[ObsType, SupportsFloat, bool, bool, Dict[str, Any]]:
         if not self.has_reset:
             raise RuntimeError("Environment has not been reset yet")
-        self.check_process()
-        self.unpause()
-        data = {
+        self.check_process()        # 检查与 Minecraft 服务器通信的进程是否处于正常状态
+        self.unpause()              # 解除游戏的暂停状态
+        data = {                    # 要发送给 Minecraft 服务器的数据
             "code": code,
             "programs": programs,
         }
-        res = requests.post(
+        res = requests.post(        # 使用 POST请求将数据发送到 Minecraft服务器的 /step 端点，执行游戏步骤
             f"{self.server}/step", json=data, timeout=self.request_timeout
         )
-        if res.status_code != 200:
+        if res.status_code != 200:  # 检查服务器的响应状态码（200表示成功）
             raise RuntimeError("Failed to step Minecraft server")
-        returned_data = res.json()
-        self.pause()
+        returned_data = res.json()  # 解析服务器返回的 JSON 数据
+        self.pause()                # 暂停游戏，以便下一次执行
         return json.loads(returned_data)
 
     def render(self):

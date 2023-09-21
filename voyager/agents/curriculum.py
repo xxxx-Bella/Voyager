@@ -11,7 +11,7 @@ from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.schema import HumanMessage, SystemMessage
 from langchain.vectorstores import Chroma
 
-
+# automatic curriculum
 class CurriculumAgent:
     def __init__(
         self,
@@ -131,7 +131,7 @@ class CurriculumAgent:
     def progress(self):
         return len(self.completed_tasks)
 
-    def render_system_message(self):
+    def render_system_message(self):  # 渲染系统信息
         system_message = SystemMessage(content=load_prompt("curriculum"))
         assert isinstance(system_message, SystemMessage)
         return system_message

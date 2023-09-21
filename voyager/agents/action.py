@@ -10,7 +10,7 @@ from langchain.schema import AIMessage, HumanMessage, SystemMessage
 from voyager.prompts import load_prompt
 from voyager.control_primitives_context import load_control_primitives_context
 
-
+# iterative prompting mechanism
 class ActionAgent:
     def __init__(
         self,
@@ -26,18 +26,18 @@ class ActionAgent:
         self.chat_log = chat_log
         self.execution_error = execution_error
         U.f_mkdir(f"{ckpt_dir}/action")
-        if resume:
+        if resume:                   # 从上一次中断的地方继续执行，加载 Action Agent的状态和先前保存的 chest_memory
             print(f"\033[32mLoading Action Agent from {ckpt_dir}/action\033[0m")
             self.chest_memory = U.load_json(f"{ckpt_dir}/action/chest_memory.json")
         else:
             self.chest_memory = {}
-        self.llm = ChatOpenAI(
+        self.llm = ChatOpenAI(       # 用于与 OpenAI 的 LM 进行交互
             model_name=model_name,
             temperature=temperature,
             request_timeout=request_timout,
         )
 
-    def update_chest_memory(self, chests):
+    def update_chest_memory(self, chests):            # 更新箱子信息
         for position, chest in chests.items():
             if position in self.chest_memory:
                 if isinstance(chest, dict):
@@ -53,19 +53,20 @@ class ActionAgent:
                     self.chest_memory[position] = chest
         U.dump_json(self.chest_memory, f"{self.ckpt_dir}/action/chest_memory.json")
 
-    def render_chest_observation(self):
+    def render_chest_observation(self):              # 渲染箱子信息
         chests = []
         for chest_position, chest in self.chest_memory.items():
-            if isinstance(chest, dict) and len(chest) > 0:
+            if isinstance(chest, dict) and len(chest) > 0:      # 已知的箱子
                 chests.append(f"{chest_position}: {chest}")
         for chest_position, chest in self.chest_memory.items():
-            if isinstance(chest, dict) and len(chest) == 0:
+            if isinstance(chest, dict) and len(chest) == 0:      # 空箱子
                 chests.append(f"{chest_position}: Empty")
         for chest_position, chest in self.chest_memory.items():
-            if isinstance(chest, str):
+            if isinstance(chest, str):                           # 没有被打开过的箱子
                 assert chest == "Unknown"
                 chests.append(f"{chest_position}: Unknown items inside")
         assert len(chests) == len(self.chest_memory)
+        # 将所有箱子的信息 格式化成一个字符串
         if chests:
             chests = "\n".join(chests)
             return f"Chests:\n{chests}\n\n"
