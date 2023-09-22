@@ -115,12 +115,12 @@ class VoyagerEnv(gym.Env):
             "code": code,
             "programs": programs,
         }
-        res = requests.post(        # 使用 POST请求将数据发送到 Minecraft服务器的 /step 端点，执行游戏步骤
+        res = requests.post(        # 使用 POST请求将数据发送到 Minecraft服务器的 /step 端点，执行游戏步骤；res是服务器返回的响应对象
             f"{self.server}/step", json=data, timeout=self.request_timeout
         )
         if res.status_code != 200:  # 检查服务器的响应状态码（200表示成功）
             raise RuntimeError("Failed to step Minecraft server")
-        returned_data = res.json()  # 解析服务器返回的 JSON 数据
+        returned_data = res.json()  # 将服务器响应内容以JSON格式解析，转换成Python数据结构
         self.pause()                # 暂停游戏，以便下一次执行
         return json.loads(returned_data)
 

@@ -1,16 +1,15 @@
 async function mineBlock(bot, name, count = 1) {
-    // return if name is not string
     if (typeof name !== "string") {
         throw new Error(`name for mineBlock must be a string`);
     }
     if (typeof count !== "number") {
         throw new Error(`count for mineBlock must be a number`);
     }
-    const blockByName = mcData.blocksByName[name];
+    const blockByName = mcData.blocksByName[name];  // 获取指定名字的block信息
     if (!blockByName) {
         throw new Error(`No block named ${name}`);
     }
-    const blocks = bot.findBlocks({
+    const blocks = bot.findBlocks({                // 找
         matching: [blockByName.id],
         maxDistance: 32,
         count: 1024,
@@ -25,11 +24,11 @@ async function mineBlock(bot, name, count = 1) {
         }
         return;
     }
-    const targets = [];
+    const targets = [];                            // 目标
     for (let i = 0; i < blocks.length; i++) {
         targets.push(bot.blockAt(blocks[i]));
     }
-    await bot.collectBlock.collect(targets, {
+    await bot.collectBlock.collect(targets, {      // 采集
         ignoreNoPath: true,
         count: count,
     });

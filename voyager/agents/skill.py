@@ -29,7 +29,7 @@ class SkillManager:
         U.f_mkdir(f"{ckpt_dir}/skill/description")
         U.f_mkdir(f"{ckpt_dir}/skill/vectordb")
         # programs for env execution
-        self.control_primitives = load_control_primitives()
+        self.control_primitives = load_control_primitives()    # skill(js code)
         if resume:
             print(f"\033[33mLoading Skill Manager from {ckpt_dir}/skill\033[0m")
             self.skills = U.load_json(f"{ckpt_dir}/skill/skills.json")
@@ -54,7 +54,7 @@ class SkillManager:
         programs = ""
         for skill_name, entry in self.skills.items():
             programs += f"{entry['code']}\n\n"
-        for primitives in self.control_primitives:
+        for primitives in self.control_primitives:  # load_control_primitives()
             programs += f"{primitives}\n\n"
         return programs
 
@@ -112,11 +112,11 @@ class SkillManager:
         return f"async function {program_name}(bot) {{\n{skill_description}\n}}"
 
     def retrieve_skills(self, query):
-        k = min(self.vectordb._collection.count(), self.retrieval_top_k)
+        k = min(self.vectordb._collection.count(), self.retrieval_top_k)  # 要检索的 skill数量（检索向量数据库，保存skill 描述）
         if k == 0:
             return []
         print(f"\033[33mSkill Manager retrieving for {k} skills\033[0m")
-        docs_and_scores = self.vectordb.similarity_search_with_score(query, k=k)
+        docs_and_scores = self.vectordb.similarity_search_with_score(query, k=k)  # 相似性搜索，返回检索到的skill和score
         print(
             f"\033[33mSkill Manager retrieved skills: "
             f"{', '.join([doc.metadata['name'] for doc, _ in docs_and_scores])}\033[0m"
