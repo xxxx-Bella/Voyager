@@ -42,7 +42,7 @@ Voyager requires Python ≥ 3.9 and Node.js ≥ 16.13.0. We have tested on Ubunt
 
 ## Python Install
 ```
-git clone https://github.com/MineDojo/Voyager
+git clone https://github.com/xxxx-Bella/Voyager.git
 cd Voyager
 pip install -e .
 ```
