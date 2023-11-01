@@ -1,14 +1,14 @@
 import re
 import time
 
-import voyager.utils as U
+import utils as U
 from javascript import require
 from langchain.chat_models import ChatOpenAI
 from langchain.prompts import SystemMessagePromptTemplate
 from langchain.schema import AIMessage, HumanMessage, SystemMessage
 
-from voyager.prompts import load_prompt
-from voyager.control_primitives_context import load_control_primitives_context
+from prompts import load_prompt
+from control_primitives_context import load_control_primitives_context
 
 
 class ActionAgent:
