@@ -85,7 +85,7 @@ azure_login = {
     "secret_value": "[OPTIONAL] YOUR_SECRET_VALUE",
     "version": "fabric-loader-0.14.18-1.19", # the version Voyager is tested on
 }
-openai_api_key = "YOUR_API_KEY"
+openai_api_key = "YOUR_API_KEY"  # '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'
 
 voyager = Voyager(
     azure_login=azure_login,
