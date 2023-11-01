@@ -1,10 +1,7 @@
 # Fabric Mods Install
 In this tutorial, we will install the Fabric launcher and 5 mods. Remember to use the correct Fabric version that matches your game version (1.19) of all the mods. 
 1. You can download the latest Fabric Installer from [here](https://fabricmc.net/use/installer/). For Windows users, just download the `.exe` file. For Mac or Ubuntu users, download the jar file and call `java -jar fabric-installer-0.11.2.jar` to install. Select game version to be `1.19` and loader version to be `0.14.18`. It will automatically detect your Minecraft game install location.
-2. After installing Fabric, you will have a `YOUR_MINECRAFT_GAME_LOCATION/mods` folder. You need to 
-   - 1) Open Minecraft launcher and select the Fabric version to start the game.
-     2) Enter the game, close the game.
-     3) Then a `mods` folder should be generated in the `YOUR_MINECRAFT_GAME_LOCATION` directory.
+2. After installing Fabric, you will have a `YOUR_MINECRAFT_GAME_LOCATION/mods` folder. You need to 1) Open Minecraft launcher and select the Fabric version to start the game. 2) Enter the game, close the game. 3) Then a `mods` folder should be generated in the `YOUR_MINECRAFT_GAME_LOCATION` directory.
 You need to put all the mods under this folder. Also, you will have a `YOUR_MINECRAFT_GAME_LOCATION/versions/fabric-loader-0.14.18-1.19`. This is the version you will run the game with. 
 4. Here are 4 mods that can be directly downloaded to `YOUR_MINECRAFT_GAME_LOCATION/mods` folder: 
    * [Fabric API](https://modrinth.com/mod/fabric-api/version/0.58.0+1.19): Basic Fabric APIs.
