@@ -128,4 +128,4 @@ logs/
 plot_iter.py
 *.svg
 
-__init__.py
+voyager/__init__.py
