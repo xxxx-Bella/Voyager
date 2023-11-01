@@ -11,7 +11,7 @@ You need to put all the mods under this folder. Also, you will have a `YOUR_MINE
 5. For the last mod [Better Respawn](https://github.com/xieleo5/better-respawn/tree/1.19), you need to manually clone and compile.
    
    * After you clone the repo, remove the `'forge'` string in the last line of `settings.gradle`. Then run `chmod +x gradlew`, then `./gradlew build` to compile the mod. You will find the compiled jar file in `better-respawn/fabric/build/libs/better-respawn-fabric-1.19-2.0.0.jar`. Put the jar file to the mod folder.
-     * You will need a Java Runtime Environment v17+ to build `better-respawn`.(`conda activate ai', then `sudo apt install openjdk-17-jdk`) Some newer JRE versions will error during build. Find the JRE v17 archive [here](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html).
+     * You will need a Java Runtime Environment v17+ to build `better-respawn`.(`conda activate ai`, then `sudo apt install openjdk-17-jdk`) Some newer JRE versions will error during build. Find the JRE v17 archive [here](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html).
    * After you launch the game, go to `YOUR_MINECRAFT_GAME_LOCATION/config/better-respawn`, and modify the properties file with:
       ```
       respawn_block_range=32
