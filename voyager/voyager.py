@@ -4,13 +4,14 @@ import os
 import time
 from typing import Dict
 
-import voyager.utils as U
-from .env import VoyagerEnv
+# import utils as U
+import utils as U
+from env import VoyagerEnv
 
-from .agents import ActionAgent
-from .agents import CriticAgent
-from .agents import CurriculumAgent
-from .agents import SkillManager
+from agents import ActionAgent
+from agents import CriticAgent
+from agents import CurriculumAgent
+from agents import SkillManager
 
 
 # TODO: remove event memory

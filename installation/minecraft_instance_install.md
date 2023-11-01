@@ -16,16 +16,16 @@ Using this method will allow Voyager to automatically resume when there's a requ
     - Redirect URI Type: `Public client/native (mobile & desktop)`, Value: `https://127.0.0.1/auth-response` (If you get `KeyError: 'access_token'` in the end, you can try to change the type to `Web`, see [FAQ](https://github.com/MineDojo/Voyager/blob/main/FAQ.md) for more information)
 6. Click on the `Register` button.
 7. The `Application (client) ID` will be your `client_id`.
-8. [Optional] Go to the `Certificates & Secrets` tab and click on the `New client secret` button. Fill the description by yourself. After you click `Add`, you will see your value, this will be your `secret_value`.
+8. [Optional] Go to the `Certificates & Secrets` tab and click on the `New client secret` button. Fill the description by yourself. (description: run voyager) After you click `Add`, you will see your value, this will be your `secret_value`.
 9. Go to your Minecraft install location `YOUR_MINECRAFT_GAME_LOCATION/versions`, and check all the versions you have. All the folder names are your valid `version` value. 
 
 After these steps, you will finally get your azure_login information:
-```python
+```python (description: run voyager)
 azure_login = {
-    "client_id": "CLIENT_ID FROM STEP 7",
+    "client_id": "YOUR_CLIENT_ID",  # '1f10bb64-dbd3-4743-917b-4d7c552ce66e'
     "redirect_url": "https://127.0.0.1/auth-response",
-    "secret_value": "[OPTIONAL] SECRET_KEY FROM STEP 8",
-    "version": "MINECRAFT VERSION YOU WANT TO USE",  # fabric-loader-0.14.18-1.19
+    "secret_value": "[OPTIONAL] YOUR_SECRET_VALUE",  # '2d68ecd7-7657-4b34-ab3d-444b93981c4c' 
+    "version": "fabric-loader-0.14.18-1.19",
 }
 ```
 **Voyager use `fabric-loader-0.14.18-1.19` version to run all the experiments.** You may not have this version currently, you can move on to the [Fabric Mods Install](fabric_mods_install.md#fabric-mods-install) section and follow the instructions there to install the fabric version of the game.

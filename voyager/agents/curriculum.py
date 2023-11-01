@@ -3,9 +3,9 @@ from __future__ import annotations
 import random
 import re
 
-import voyager.utils as U
-from voyager.prompts import load_prompt
-from voyager.utils.json_utils import fix_and_parse_json
+import utils as U
+from prompts import load_prompt
+from utils.json_utils import fix_and_parse_json
 from langchain.chat_models import ChatOpenAI
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.schema import HumanMessage, SystemMessage
