@@ -25,7 +25,7 @@ azure_login = {
     "client_id": "CLIENT_ID FROM STEP 7",
     "redirect_url": "https://127.0.0.1/auth-response",
     "secret_value": "[OPTIONAL] SECRET_KEY FROM STEP 8",
-    "version": "MINECRAFT VERSION YOU WANT TO USE",
+    "version": "MINECRAFT VERSION YOU WANT TO USE",  # fabric-loader-0.14.18-1.19
 }
 ```
 **Voyager use `fabric-loader-0.14.18-1.19` version to run all the experiments.** You may not have this version currently, you can move on to the [Fabric Mods Install](fabric_mods_install.md#fabric-mods-install) section and follow the instructions there to install the fabric version of the game.
