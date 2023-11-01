@@ -22,9 +22,9 @@ Using this method will allow Voyager to automatically resume when there's a requ
 After these steps, you will finally get your azure_login information:
 ```python (description: run voyager)
 azure_login = {
-    "client_id": "YOUR_CLIENT_ID",  # '1f10bb64-dbd3-4743-917b-4d7c552ce66e'
+    "client_id": "YOUR_CLIENT_ID",
     "redirect_url": "https://127.0.0.1/auth-response",
-    "secret_value": "[OPTIONAL] YOUR_SECRET_VALUE",  # '2d68ecd7-7657-4b34-ab3d-444b93981c4c' 
+    "secret_value": "[OPTIONAL] YOUR_SECRET_VALUE",
     "version": "fabric-loader-0.14.18-1.19",
 }
 ```
